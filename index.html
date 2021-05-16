@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		body{
+			background-color: gray;
+		}
+		.container{
+			max-width: 400px;
+			margin: 0 auto;
+			width: 100%;
+			outline: 1px solid ;
+			display: flex;
+			overflow-x: auto;
+		}
+		.cell{
+			color: orange;
+			text-align: center;
+			width: 57.14px;
+			flex-shrink: 0;
+		}
+		.cell__val{
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<h2 id="cur-year">2021</h2>
+	<h1 id="cur-month">0</h1>
+	<button id="lengthdispl">lendgth viwe!</button>
+	<div class="container"></div>
+	<form action="#" id="date-form">
+		<input type="number" id="year" value="1986">
+		<select name="month" id="month-select">
+
+		</select>
+	</form>
+
+	<script src="app.js"></script>
+</body>
+</html>
