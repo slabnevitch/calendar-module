@@ -15,7 +15,9 @@ function horizontalCalendar(){
   let scrolling = false;
   let isPrevYearAdded = false;
   let isNextYearAdded = false;
-  
+
+  var lastSevenDays = [];
+
   creatDataForCalendar = () => {
     daysArr = []; //очищаем массив дней в месяцах
     for(var i=0; i<12; i++){
@@ -39,33 +41,33 @@ function horizontalCalendar(){
     return fullYearArr;
   },
     
-  createNewYear = () => {
-    const newYear = [];
-    daysArr = [];
+	createNewYear = () => {
+		const newYear = [];
+		daysArr = [];
+
+		for(var i=0; i<12; i++){
+		daysArr.push(createCalendar(currentYear, i, activeDates)); //наполняем текущий год месяцами. Каждый эл-т. массива -- массив с днями месяца
+		}
+		monthsLengthsArr = [];
+		daysArr.forEach((month) => {
+		      monthsLengthsArr.push(month.length * dayWidth);//наполняем массив ширинами всех месяцев в пикселях, исходя из заданной ширины ячейки одного дня
+		      month.forEach(day => {
+		      	newYear.push(day);
+		      });
+		  });
+		monthCheckPoints = [];//очищаем массив массив границ
+		monthsLengthsArr.reduce((sum, cur) =>{  
+			var val = sum + cur;
+		  // console.log(val)
+		  monthCheckPoints.push(val)//наполняем массив границ данными нового года, суммируя длины месяцев
+		  return val;
+		}, 0);
+		console.log('newYear.length in his own func:');
+		console.log(newYear.length);
+		return newYear;
+	},
     
-    for(var i=0; i<12; i++){
-    daysArr.push(createCalendar(currentYear, i, activeDates)); //наполняем текущий год месяцами. Каждый эл-т. массива -- массив с днями месяца
-    }
-    monthsLengthsArr = [];
-    daysArr.forEach((month) => {
-      monthsLengthsArr.push(month.length * dayWidth);//наполняем массив ширинами всех месяцев в пикселях, исходя из заданной ширины ячейки одного дня
-      month.forEach(day => {
-        newYear.push(day);
-      });
-    });
-    monthCheckPoints = [];//очищаем массив массив границ
-    monthsLengthsArr.reduce((sum, cur) =>{  
-      var val = sum + cur;
-      // console.log(val)
-      monthCheckPoints.push(val)//наполняем массив границ данными нового года, суммируя длины месяцев
-      return val;
-    }, 0);
-    console.log('newYear.length in his own func:');
-     console.log(newYear.length);
-    return newYear;
-  },
-    
-  createCalendar = (year, month, activeDates) => {
+createCalendar = (year, month, activeDates) => {
     // console.log(year, month);
     var currentDate = new Date(year, month),//дата, переданная в ф-цию. при первом ее вызове или из формы при изменении
         nextDate = new Date(year, month + 1),// месяц, следующий за текущим
@@ -73,48 +75,54 @@ function horizontalCalendar(){
         periodMs = nextDate - currentDate,//разница в милисекундах м/у первыми числами текущего и следующего месяца
         days = parseInt(periodMs/(60*60*1000*24)),//количество дней в текущем месяце
         daysNames = ['ВC', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
-    var n = currentDateDay.getDay() - 1,
+        var n = currentDateDay.getDay() - 1,
         arr = [],
-        startDay = currentDateDay.getDay();
+        startDay = currentDateDay.getDay(),
+        options = {
+		day: '2-digit',
+		month: 'long',
+		year: 'numeric',
+		hour: '2-digit', 
+		minute: '2-digit'
+	};
 
     for(var i = 0; i < days; i++){
-      var activeDate = false;
-      activeDates.forEach((day) => {
-        if(day.getDate() === i){
-          activeDate = true;
-        }
-      });
-      n++;
-      if(n > 6 ) n = 0;
-      // console.log("число " + (i+1) + "день недели " + n);
+    	var activeDate = false;
+    	activeDates.forEach((day) => {
+    		if(day.getDate() === i){
+    			activeDate = true;
+    		}
+    	});
+    	n++;
+    	if(n > 6 ) n = 0;
+  		// console.log("число " + (i+1) + "день недели " + n);
+	const textDate = new Intl.DateTimeFormat('ru-RU', options).format(new Date(year, month, i+1));
       var cell = {
-        dayOfWeekInd: i + 1, 
-        dayName: daysNames[n], 
-        dayOfMonth: n,
-        isActiveDay: activeDate
+      	dayOfWeekInd: i + 1, 
+      	dayName: daysNames[n], 
+      	dayOfMonth: n,
+      	isActiveDay: activeDate,
+      	textDate
       };
       arr.push(cell);
-    }
+   }
 
-    return arr;
+  return arr;
     // generateNet(arr[0].dayOfMonth, arr);
 
-  },
+},
     
   removePrevYearWeekBackward = () => {
     console.log('removePrevYearWeekBackward');
     const deleteCount = fullYearArr.length > 365 ? 8 : 7;
-    console.log('deleteCount '+ deleteCount);
+    console.log('deleteCount '+ 8);
     [...daysContainer.childNodes].forEach((node, i) => {
-      if(i > fullYearArr.length - deleteCount){
+      if(i > fullYearArr.length - 8){
         // console.log(i);
         node.remove();
       }
     });
-    fullYearArr.splice(fullYearArr.length - deleteCount, deleteCount);
-    
-    console.log('Кол-во дней в хтмл после обрезания лишней недели НАЗАД = ' + daysContainer.childNodes.length);
-    console.log('Кол-во дней в Массиве после обрезания лишней недели НАЗАД = ' + fullYearArr.length);
+    fullYearArr.splice(fullYearArr.length - 8, 8);
     isPrevYearAdded = false;
     console.log('isPrevYearAdded= ' + isPrevYearAdded);
   },
@@ -128,16 +136,14 @@ function horizontalCalendar(){
         node.remove();//удаляем из ХТМЛ все дни текущего года кроме последних 7-ми
       }
     });
+
     fullYearArr.splice(0, 7);
-    console.log('Кол-во дней в хтмл после обрезания лишней недели ВПЕРЕД = ' + daysContainer.childNodes.length);
-    console.log('Кол-во дней в Массиве после обрезания лишней недели ВПЕРЕД = ' + fullYearArr.length);
     isNextYearAdded = false;
     console.log('isNextYearAdded = ' + isNextYearAdded);
   },
   
   removeDaysOfNextYearFromEnd = (daysCount) => {
     //вызывается при движении НАЗАД
-     console.log('removeDaysOfNextYearFromEnd');
     
      [...daysContainer.childNodes].forEach((node, i) => {
        
@@ -147,15 +153,11 @@ function horizontalCalendar(){
       }
     });
     fullYearArr.splice(7, fullYearArr.length)
-    console.log('длина массива всех дней при обрезании предыдущего года НАЗАД ' + fullYearArr.length);
-    console.log('длина всех детей календаря при обрезании предыдущего года НАЗАД ' + daysContainer.childNodes.length);
   },
     
   removeDaysOfPrevYearFromEnd = () => {
     //вызывается при движении ВПЕРЕД
-    console.log('removeDaysOfPrevYearFromEnd');
-      console.log('длина всех детей календаря ДО обрезания предыдущего года ВПЕРЕД ' + daysContainer.childNodes.length);
-     
+      
     [...daysContainer.childNodes].forEach((node, i) => {
        
       if(i < fullYearArr.length - 7){
@@ -163,8 +165,6 @@ function horizontalCalendar(){
         node.remove();//удаляем из ХТМЛ все дни текущего года кроме последних 7-ми
       }
     });
-    console.log('длина массива всех дней при обрезании предыдущего года ВПЕРЕД ' + fullYearArr.length);
-    console.log('длина всех детей календаря при обрезании предыдущего года ВПЕРЕД ' + daysContainer.childNodes.length);
   },
     
   daysPrepend = () => {
@@ -175,6 +175,7 @@ function horizontalCalendar(){
         cellVal = document.createElement('div'),
         cellName = document.createElement('div');
         cell.className = 'cell';
+        cell.setAttribute('data-text', el.textDate);
         cellVal.className = 'cell__val';
         cellName.className = 'cell__name';
 
@@ -190,12 +191,11 @@ function horizontalCalendar(){
   daysAppend = () => {
     console.log(createNewYear());
     createNewYear().forEach((el, i, arr) => {//рендерим массив нового года в ХТМЛ
-         // if(i > daysArr.length - 1) return;
-      // console.log(el)
         var cell = document.createElement('div'),
         cellVal = document.createElement('div'),
         cellName = document.createElement('div');
         cell.className = 'cell';
+        cell.setAttribute('data-text', el.textDate);
         cellVal.className = 'cell__val';
         cellName.className = 'cell__name';
 
@@ -206,6 +206,32 @@ function horizontalCalendar(){
         cell.append(cellVal);
         daysContainer.append(cell);
     });
+
+    if(isPrevYearAdded){
+    	[...daysContainer.childNodes].forEach((node, i) => {
+    		if(i < 8){
+    			node.remove();
+    		}
+    	});
+   		lastSevenDays.reverse().forEach((el, i, arr) => {
+
+	        var cell = document.createElement('div'),
+	        cellVal = document.createElement('div'),
+	        cellName = document.createElement('div');
+	        cell.className = 'cell';
+	        cell.setAttribute('data-text', el.textDate);
+	        cellVal.className = 'cell__val';
+	        cellName.className = 'cell__name';
+
+	        cellVal.innerText = arr[i].dayOfWeekInd;
+	        cellName.innerText = arr[i].dayName;
+
+	        cell.append(cellName);
+	        cell.append(cellVal);
+	        daysContainer.prepend(cell);
+    	});
+    }
+
   },
     
   render = () => {
@@ -222,6 +248,7 @@ function horizontalCalendar(){
         cellVal = document.createElement('div'),
         cellName = document.createElement('div');
         cell.className = 'cell';
+        cell.setAttribute('data-text', el.textDate);
         cellVal.className = 'cell__val';
         cellName.className = 'cell__name';
 
@@ -280,7 +307,7 @@ function horizontalCalendar(){
             calendarForwardCut();
          }
         
-        if(daysContainer.scrollLeft < monthCheckPoints[10] && isPrevYearAdded){
+        if(daysContainer.scrollLeft < monthCheckPoints[10] && daysContainer.scrollLeft > monthCheckPoints[0] && isPrevYearAdded){
          removePrevYearWeekBackward(); 
         }
         
@@ -309,7 +336,15 @@ function horizontalCalendar(){
      
    calendarForwardCut = () => {
      removeDaysOfPrevYearFromEnd();
-     fullYearArr.splice(0, fullYearArr.length - 7);//удаляем из массива всех дней текущего года все дни, кроме последних 8-ми дней декабря
+     if(!isPrevYearAdded){
+     	fullYearArr.splice(0, fullYearArr.length - 7);//удаляем из массива всех дней текущего года все дни, кроме последних 8-ми дней декабря
+     }else{
+     	// fullYearArr.splice(0, fullYearArr.length - 7);
+     	console.log('Последняя неделя года ВПЕРЕД:');
+     	lastSevenDays = fullYearArr.slice(0, 7);
+     	console.log(lastSevenDays);
+     	fullYearArr.splice(0, fullYearArr.length - 7);
+     }
      console.log('массив дней после удаления ВПЕРЕД '+ fullYearArr.length);
       calendarForwardPush();
    },
@@ -324,6 +359,7 @@ function horizontalCalendar(){
      isPrevYearAdded = true;
 
      console.log('isPrevYearAdded = ' + isPrevYearAdded);
+     
      console.log('длина массива всех дней при добавлении предыдущего года НАЗАД ' + fullYearArr.length);
      console.log('длина всех детей календаря при добавлении предыдущего года НАЗАД ' + daysContainer.childNodes.length);
      
@@ -338,11 +374,24 @@ function horizontalCalendar(){
        fullYearArr.push(item);//добавляем дни следующего (при прокрутке вперед) года к оставшейся неделе текущего
      });
 
-     console.log('новый год вперед общее кол-во' + fullYearArr.length);
-     daysAppend(); //вызов ф-ции. добавления дочерних узлов в начало контейнера
-     isNextYearAdded = true;
-     console.log('isNextYearAdded = ' + isNextYearAdded);
+     console.log('fullYearArr до добавления 25-31:');
+     console.log(fullYearArr);
 
+     if(isPrevYearAdded){
+     	fullYearArr.splice(0, 7);
+     	fullYearArr = [...lastSevenDays.reverse(), ...fullYearArr];
+     }
+
+     console.log('новый год вперед общее кол-во Если пришли с предыдущего месяца ДО удаления последней недели:');
+     console.log(fullYearArr);
+
+     daysAppend(); //вызов ф-ции. добавления дочерних узлов в начало контейнера
+
+     isNextYearAdded = true;
+
+     console.log('isNextYearAdded = ' + isNextYearAdded);
+     console.log('!!isPrevYearAdded = ' + isPrevYearAdded);
+     
      wrapperScroll(200);
      
      console.log('длина массива всех дней при добаалении СЛЕДУЮЩЕГО года ВПЕРЕД' + fullYearArr.length);
